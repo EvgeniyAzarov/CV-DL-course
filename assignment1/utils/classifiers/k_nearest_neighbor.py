@@ -77,7 +77,7 @@ class KNearestNeighbor(object):
                 #####################################################################
                 # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-                pass
+                dists[i, j] = np.sqrt(((X[i] - self.X_train[j]) ** 2).sum())
 
                 # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return dists
@@ -101,7 +101,9 @@ class KNearestNeighbor(object):
             #######################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            # X[i]: (1, D)
+            # self.X_train: (num_train, D)
+            dists[i] = np.sqrt(((X[i] - self.X_train) ** 2).sum(axis=-1))
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return dists
@@ -131,7 +133,17 @@ class KNearestNeighbor(object):
         #########################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        # X: (num_test, D)
+        # X_train: (num_train, D)
+
+        # consider theoretical X: (num_test, 1, D), T: (1, num_train, D)
+        # then dists = sqrt((X - T)^2.sum(axis=-1))
+        # (X - T) x (X - T) = X x X - X x T - T x X + T x T, where 'x' is a pointwise product 
+        # X x T = X @ X_train^T = T x X
+        X2 = np.expand_dims((X ** 2).sum(axis=-1), 1)
+        XT = X @ self.X_train.T 
+        T2 = np.expand_dims((self.X_train**2).sum(axis=-1), 0)
+        dists = np.sqrt(X2 - 2 * XT + T2)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return dists
@@ -164,7 +176,7 @@ class KNearestNeighbor(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            closest_y = self.y_train[np.argsort(dists[i])[:k]]
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
             #########################################################################
@@ -176,7 +188,15 @@ class KNearestNeighbor(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            count = dict() 
+            for y in closest_y:
+                count[y] = count.get(y, 0) + 1
+            
+            # k log k instead of k, but usually we have relatively small k so it's not crucial
+            # we are sorting larger->smaller for x[1] and smaller->larger for x[0]
+            sorted_pairs = sorted(list(count.items()), key=lambda x: (-x[1], x[0]))
+
+            y_pred[i] = sorted_pairs[0][0]
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
