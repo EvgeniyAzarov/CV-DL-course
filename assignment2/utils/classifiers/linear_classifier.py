@@ -64,7 +64,10 @@ class LinearClassifier(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            indices = np.random.choice(np.arange(num_train), size=batch_size)
+            X_batch = X[indices]
+            y_batch = y[indices]
+
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -79,7 +82,7 @@ class LinearClassifier(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            pass
+            self.W -= learning_rate * grad
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -109,7 +112,10 @@ class LinearClassifier(object):
         ###########################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        f = X @ self.W
+        f -= f.max(axis=1, keepdims=True)
+        p = np.exp(f) / np.exp(f).sum(axis=1, keepdims=True)
+        y_pred = p.argmax(axis=1)
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         return y_pred

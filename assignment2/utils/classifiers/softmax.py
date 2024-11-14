@@ -33,7 +33,25 @@ def softmax_loss_naive(W, X, y, reg):
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    N = X.shape[0]
+    C = W.shape[1]
+    f = X @ W
+
+    # loss
+    for i in range(N):
+        j = y[i]
+        f[i] -= f[i].max()
+        loss += (-f[i][j] + np.log(np.exp(f[i]).sum())) / N
+
+    loss += reg * (W ** 2).sum()
+
+    # gradient
+    for i in range(N):
+      p = np.exp(f[i]) / np.exp(f[i]).sum()
+      for j in range(C):
+        dW[:, j] += (p[j] - float(j==y[i])) * X[i]
+    dW /= N
+    dW += reg * 2 * W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -57,8 +75,19 @@ def softmax_loss_vectorized(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    N = X.shape[0]
+    f = X @ W
+    f -= f.max(axis=1, keepdims=True)
 
-    pass
+    p = np.exp(f) / np.exp(f).sum(axis=1, keepdims=True)
+
+    loss = -np.log(p[np.arange(N), y]).mean()
+    loss += reg * (W ** 2).sum()
+
+    dldf = p
+    dldf[np.arange(N), y] -= 1
+    dW = X.T @ dldf / N
+    dW += reg * 2 * W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
